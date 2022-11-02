@@ -8,6 +8,23 @@ This repository contains the walkthrough code for my CMake related blog posts.
 Install Catch2
 https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository
 
+Compile
+```
+cmake -Bbuild
+cmake --build build
+cmake --build build && ./build/test/tests
+```
+
+## Network
+
+### Frame structure
+```
+|Key(4)--------|Value(96)----------------------|
+|Index(24bit)|-|SecKey(28)|SecValue(67)--------|
+|Frame(128)------------------------------------|
+|Header(32)---------------|Encrypted Packet(96)|
+```
+
 ## Links to the posts:
 
 1. [Hello CMake!](https://arne-mertz.de/2018/05/hello-cmake/)

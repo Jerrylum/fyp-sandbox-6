@@ -1,4 +1,4 @@
-project(hello_tests)
+project(exchange_server_tests)
 
 find_package(Catch2 3 REQUIRED)
 
