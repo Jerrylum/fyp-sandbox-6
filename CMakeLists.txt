@@ -11,6 +11,6 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
-add_subdirectory(thirdparty/catch)
+# add_subdirectory(thirdparty/catch)
 add_subdirectory(src)
 add_subdirectory(test)

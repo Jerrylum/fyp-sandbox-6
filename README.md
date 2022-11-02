@@ -2,6 +2,12 @@
 
 This repository contains the walkthrough code for my CMake related blog posts.
 
+
+## Development
+
+Install Catch2
+https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository
+
 ## Links to the posts:
 
 1. [Hello CMake!](https://arne-mertz.de/2018/05/hello-cmake/)

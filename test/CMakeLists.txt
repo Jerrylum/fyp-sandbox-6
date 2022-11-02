@@ -1,6 +1,7 @@
 project(hello_tests)
 
+find_package(Catch2 3 REQUIRED)
+
 # The test program
 add_executable(tests testmain.cpp)
-target_link_libraries(tests PRIVATE hello_lib catch)
-target_compile_definitions(tests PRIVATE CATCH_CONFIG_CONSOLE_WIDTH=60)
+target_link_libraries(tests PRIVATE api Catch2::Catch2WithMain)
