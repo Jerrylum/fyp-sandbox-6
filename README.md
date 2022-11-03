@@ -13,14 +13,15 @@ Compile
 cmake -Bbuild
 cmake --build build
 cmake --build build && ./build/test/tests
+cmake --build build && ./build/test/tests --benchmark-samples 1000
 ```
 
 ## Network
 
 ### Frame structure
 ```
-|Key(4)--------|Value(96)----------------------|
-|Index(24bit)|-|SecKey(28)|SecValue(67)--------|
+|Key(4)--------|Value(124)---------------------|
+|Index(24bit)|-|SecKey(28)|SecValue(96)--------|
 |Frame(128)------------------------------------|
 |Header(32)---------------|Encrypted Packet(96)|
 ```

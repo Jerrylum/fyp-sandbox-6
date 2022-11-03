@@ -56,3 +56,40 @@ uint8_t table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
 
   return 0;
 }
+
+void ordinary_table::put_frame(uint8_t *frame) {
+  KEY_TYPE key;
+  memcpy(&key, frame, KEY_SIZE);
+  put(key, frame + KEY_SIZE);
+}
+
+void ordinary_table::put(KEY_TYPE key, uint8_t *value) {
+  struct value *v = new struct value;
+  memcpy(v->value, value, VALUE_SIZE);
+  v->next = NULL;
+
+  data[key] = v;
+}
+
+uint8_t ordinary_table::get_by_header(uint8_t *dst, uint8_t *header) {
+  KEY_TYPE key;
+  memcpy(&key, header, KEY_SIZE);
+
+  return get(dst, key, header + KEY_SIZE);
+}
+
+uint8_t ordinary_table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
+  struct value *v = data[key];
+
+  if (v == NULL) {
+    return 0;
+  }
+
+  if (memcmp(v->value, sec_key, SECONDARY_KEY_SIZE) == 0) {
+    memcpy(dst, v->value + SECONDARY_KEY_SIZE, SECONDARY_VALUE_SIZE);
+    return 1;
+  }
+
+  return 0;
+}
+
