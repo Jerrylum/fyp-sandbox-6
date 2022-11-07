@@ -14,6 +14,7 @@ cmake -Bbuild
 cmake --build build
 cmake --build build && ./build/test/tests
 cmake --build build && ./build/test/tests --benchmark-samples 1000
+cmake --build build && ./build/test/tests --durations yes
 ```
 
 ## Network

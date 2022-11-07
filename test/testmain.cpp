@@ -24,7 +24,39 @@ std::uint64_t Fibonacci(std::uint64_t number) {
     return number < 2 ? 1 : Fibonacci(number - 1) + Fibonacci(number - 2);
 }
 
-TEST_CASE("T1") {
+// TEST_CASE("T1") {
+//     table t = table();
+//     int i = 0;
+
+//     uint8_t frame[FRAME_SIZE] = {0};
+//     // get long from the frame, big endian
+//     int *key = (int *)frame;
+
+//     // now let's benchmark:
+//     BENCHMARK("T1 1") {
+//         (*key)++;
+//         t.put_frame(frame);
+//         return 1;
+//     };
+// }
+
+// TEST_CASE("T2") {
+//     ordinary_table t = ordinary_table();
+//     int i = 0;
+
+//     uint8_t frame[FRAME_SIZE] = {0};
+//     // get long from the frame, big endian
+//     int *key = (int *)frame;
+
+//     // now let's benchmark:
+//     BENCHMARK("T2 2") {
+//         (*key)++;
+//         t.put_frame(frame);
+//         return 1;
+//     };
+// }
+
+TEST_CASE("T3") {
     table t = table();
     int i = 0;
 
@@ -32,15 +64,20 @@ TEST_CASE("T1") {
     // get long from the frame, big endian
     int *key = (int *)frame;
 
-    // now let's benchmark:
-    BENCHMARK("T1 1") {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 100'0000; i++) {
         (*key)++;
         t.put_frame(frame);
-        return 1;
-    };
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    printf("T3 took %ld nanoseconds to run \n ", duration.count());
 }
 
-TEST_CASE("T2") {
+TEST_CASE("T4") {
     ordinary_table t = ordinary_table();
     int i = 0;
 
@@ -48,10 +85,15 @@ TEST_CASE("T2") {
     // get long from the frame, big endian
     int *key = (int *)frame;
 
-    // now let's benchmark:
-    BENCHMARK("T2 2") {
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    for (int i = 0; i < 100'0000; i++) {
         (*key)++;
         t.put_frame(frame);
-        return 1;
-    };
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    printf("T4 took %ld nanoseconds to run \n ", duration.count());
 }
