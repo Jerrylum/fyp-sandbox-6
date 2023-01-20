@@ -1,11 +1,47 @@
 #include "api.h"
 
 #include <iostream>
+#include <sys/time.h>
 
-table::table() { std::cout << "table constructor" << std::endl; }
+void* table_run(void* param) {
+  table* t = (table*)param;
+  t->running = true;
+
+  struct timeval now_time;
+  struct timespec out_time;
+
+  std::cout << "table run start" << std::endl;
+
+  while (t->running) {
+    pthread_mutex_lock(&t->mutex);
+    pthread_cond_timedwait(&t->cond, &t->mutex, &out_time);
+    if (!t->running) break;
+    pthread_mutex_unlock(&t->mutex);
+
+    gettimeofday(&now_time, NULL);
+    if (now_time.tv_sec >= out_time.tv_sec) {
+      out_time.tv_sec = now_time.tv_sec + 1;
+      std::cout << "table run" << std::endl;
+    }
+  }
+
+  std::cout << "table run end" << std::endl;
+
+  return nullptr;
+}
+
+table::table() {
+  pthread_create(&deamon_thread, NULL, table_run, this);
+
+  std::cout << "table constructor" << std::endl;
+}
 
 table::~table() {
   std::cout << "table destructor" << std::endl;
+
+  pthread_mutex_lock(&this->mutex);
+  this->running = false;
+  pthread_cond_signal(&this->cond);
 
   for (int i = 0; i < INDEX_COUNT; i++) {
     struct value *v = data[i];
@@ -15,6 +51,11 @@ table::~table() {
       v = next;
     }
   }
+  
+  pthread_mutex_unlock(&this->mutex);
+
+  pthread_cond_destroy(&this->cond);
+  pthread_mutex_destroy(&this->mutex);
 }
 
 void table::put_frame(uint8_t *frame) {
@@ -24,7 +65,6 @@ void table::put_frame(uint8_t *frame) {
 }
 
 void table::put(KEY_TYPE key, uint8_t *value) {
-
   KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
   struct value *head = data[index];
 
@@ -92,4 +132,3 @@ uint8_t ordinary_table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
 
   return 0;
 }
-

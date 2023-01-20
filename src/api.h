@@ -41,6 +41,13 @@ struct value {
 class table {
  private:
   struct value *data[INDEX_COUNT] = {};
+  bool running = false;
+  
+  pthread_t deamon_thread;
+  pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+  pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+  friend void* table_run(void* param);
 
  public:
   table();
