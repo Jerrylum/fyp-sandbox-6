@@ -4,7 +4,7 @@
 #include <sys/time.h>
 
 void* table_run(void* param) {
-  table* t = (table*)param;
+  Table* t = (Table*)param;
   t->running = true;
 
   struct timeval now_time;
@@ -30,13 +30,13 @@ void* table_run(void* param) {
   return nullptr;
 }
 
-table::table() {
+Table::Table() {
   pthread_create(&deamon_thread, NULL, table_run, this);
 
   std::cout << "table constructor" << std::endl;
 }
 
-table::~table() {
+Table::~Table() {
   std::cout << "table destructor" << std::endl;
 
   pthread_mutex_lock(&this->mutex);
@@ -44,9 +44,9 @@ table::~table() {
   pthread_cond_signal(&this->cond);
 
   for (int i = 0; i < INDEX_COUNT; i++) {
-    struct value *v = data[i];
+    struct Value *v = data[i];
     while (v != NULL) {
-      struct value *next = v->next;
+      struct Value *next = v->next;
       delete v;
       v = next;
     }
@@ -58,33 +58,33 @@ table::~table() {
   pthread_mutex_destroy(&this->mutex);
 }
 
-void table::put_frame(uint8_t *frame) {
+void Table::put_frame(uint8_t *frame) {
   KEY_TYPE key;
   memcpy(&key, frame, KEY_SIZE);
   put(key, frame + KEY_SIZE);
 }
 
-void table::put(KEY_TYPE key, uint8_t *value) {
+void Table::put(KEY_TYPE key, uint8_t *value) {
   KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
-  struct value *head = data[index];
+  struct Value *head = data[index];
 
-  struct value *v = new struct value;
+  struct Value *v = new struct Value;
   memcpy(v->value, value, VALUE_SIZE);
   v->next = head;
 
   data[index] = v;
 }
 
-uint8_t table::get_by_header(uint8_t *dst, uint8_t *header) {
+uint8_t Table::get_by_header(uint8_t *dst, uint8_t *header) {
   KEY_TYPE key;
   memcpy(&key, header, KEY_SIZE);
 
   return get(dst, key, header + KEY_SIZE);
 }
 
-uint8_t table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
+uint8_t Table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
   KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
-  struct value *v = data[index];
+  struct Value *v = data[index];
 
   while (v != NULL) {
     if (memcmp(v->value, sec_key, SECONDARY_KEY_SIZE) == 0) {
@@ -97,29 +97,29 @@ uint8_t table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
   return 0;
 }
 
-void ordinary_table::put_frame(uint8_t *frame) {
+void OrdinaryTable::put_frame(uint8_t *frame) {
   KEY_TYPE key;
   memcpy(&key, frame, KEY_SIZE);
   put(key, frame + KEY_SIZE);
 }
 
-void ordinary_table::put(KEY_TYPE key, uint8_t *value) {
-  struct value *v = new struct value;
+void OrdinaryTable::put(KEY_TYPE key, uint8_t *value) {
+  struct Value *v = new struct Value;
   memcpy(v->value, value, VALUE_SIZE);
   v->next = NULL;
 
   data[key] = v;
 }
 
-uint8_t ordinary_table::get_by_header(uint8_t *dst, uint8_t *header) {
+uint8_t OrdinaryTable::get_by_header(uint8_t *dst, uint8_t *header) {
   KEY_TYPE key;
   memcpy(&key, header, KEY_SIZE);
 
   return get(dst, key, header + KEY_SIZE);
 }
 
-uint8_t ordinary_table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
-  struct value *v = data[key];
+uint8_t OrdinaryTable::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
+  struct Value *v = data[key];
 
   if (v == NULL) {
     return 0;

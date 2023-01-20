@@ -41,7 +41,7 @@ std::uint64_t Fibonacci(std::uint64_t number) {
 // }
 
 // TEST_CASE("T2") {
-//     ordinary_table t = ordinary_table();
+//     OrdinaryTable t = OrdinaryTable();
 //     int i = 0;
 
 //     uint8_t frame[FRAME_SIZE] = {0};
@@ -57,7 +57,7 @@ std::uint64_t Fibonacci(std::uint64_t number) {
 // }
 
 TEST_CASE("T3") {
-    table t = table();
+    Table t = Table();
     int i = 0;
 
     uint8_t frame[FRAME_SIZE] = {0};
@@ -78,7 +78,7 @@ TEST_CASE("T3") {
 }
 
 TEST_CASE("T4") {
-    ordinary_table t = ordinary_table();
+    OrdinaryTable t = OrdinaryTable();
     int i = 0;
 
     uint8_t frame[FRAME_SIZE] = {0};

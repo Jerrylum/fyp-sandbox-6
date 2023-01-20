@@ -3,7 +3,7 @@
 int main() {
   // hello("CMake");
 
-  ordinary_table t = ordinary_table();
+  OrdinaryTable t = OrdinaryTable();
 
   uint8_t frame[FRAME_SIZE] = {0};
   getrandom(frame, FRAME_SIZE, 0);

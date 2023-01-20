@@ -33,14 +33,14 @@
 #define INDEX_BIT_SIZE (19)
 #define INDEX_COUNT (1 << INDEX_BIT_SIZE)
 
-struct value {
+struct Value {
   uint8_t value[VALUE_SIZE];
-  struct value *next;
+  struct Value *next;
 };
 
-class table {
+class Table {
  private:
-  struct value *data[INDEX_COUNT] = {};
+  struct Value *data[INDEX_COUNT] = {};
   bool running = false;
   
   pthread_t deamon_thread;
@@ -50,8 +50,8 @@ class table {
   friend void* table_run(void* param);
 
  public:
-  table();
-  ~table();
+  Table();
+  ~Table();
 
   void put_frame(uint8_t frame[FRAME_SIZE]);
   void put(KEY_TYPE key, uint8_t value[VALUE_SIZE]);
@@ -60,12 +60,12 @@ class table {
 };
 
 // extend table
-class ordinary_table {
+class OrdinaryTable {
  private:
-  std::map<KEY_TYPE, struct value *> data;
+  std::map<KEY_TYPE, struct Value *> data;
  public:
-  ordinary_table() {};
-  ~ordinary_table() {};
+  OrdinaryTable() {};
+  ~OrdinaryTable() {};
   
   void put_frame(uint8_t frame[FRAME_SIZE]);
   void put(KEY_TYPE key, uint8_t value[VALUE_SIZE]);
