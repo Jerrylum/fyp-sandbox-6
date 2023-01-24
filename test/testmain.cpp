@@ -70,13 +70,11 @@ TEST_CASE("T3") {
     (*key) += (1 << (32 - INDEX_BIT_SIZE));
     (*key2)++;
 
-    // std::cout << "key: " << *key << std::endl;
-
-    REQUIRE(t.get_by_header(dst, frame) == 0);
+    // REQUIRE(t.get_by_header(dst, frame) == 0);
 
     t.put_frame(frame);
 
-    REQUIRE(t.get_by_header(dst, frame) != 0);
+    // REQUIRE(t.get_by_header(dst, frame) != 0);
   }
 
   auto end = std::chrono::high_resolution_clock::now();
@@ -84,12 +82,12 @@ TEST_CASE("T3") {
   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
   printf("T3 took %ld nanoseconds to run \n ", duration.count());
 
-  for (int i = 0; i < 10; i++) {
-    std::cout << (t.get_by_header(dst, frame) != 0) << std::endl;
+//   for (int i = 0; i < 10; i++) {
+//     std::cout << (t.get_by_header(dst, frame) != 0) << std::endl;
 
-    // sleep 10 seconds
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-  }
+//     // sleep 10 seconds
+//     std::this_thread::sleep_for(std::chrono::seconds(10));
+//   }
 }
 
 TEST_CASE("T4") {

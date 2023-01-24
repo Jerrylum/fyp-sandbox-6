@@ -40,6 +40,41 @@ void *table_run(void *param) {
   return nullptr;
 }
 
+static void free_linked_list(struct Value *v) {
+  while (v != NULL) {
+    struct Value *next = v->next;
+    delete v;
+    v = next;
+  }
+}
+
+void ValueQueue::init() {
+  data = (Value **)malloc(sizeof(struct Value *) * GENERATION_COUNT * INDEX_COUNT);
+  // check if malloc failed
+  for (int i = 0; i < GENERATION_COUNT * INDEX_COUNT; i++) data[i] = NULL;
+}
+
+void ValueQueue::renew() {
+  pthread_mutex_lock(&mutex);
+
+  garbage_index = (garbage_index + 1) % GENERATION_COUNT;
+  uint32_t next_index = (current_index + 1) % GENERATION_COUNT;
+  memcpy(&data[next_index * INDEX_COUNT], &data[current_index * INDEX_COUNT], sizeof(struct Value *) * INDEX_COUNT);
+  std::cout << "renew: " << current_index << " -> " << next_index << std::endl;
+  current_index = next_index;
+
+  pthread_mutex_unlock(&mutex);
+
+  
+  for (int i = 0; i < INDEX_COUNT; i++) {
+    struct Value *garbage_v = last(i);
+    if (garbage_v == NULL) continue;
+
+    free_linked_list(garbage_v->next);
+    garbage_v->next = NULL;
+  }
+}
+
 Table::Table() {
   pthread_create(&deamon_thread, NULL, table_run, this);
 
@@ -56,12 +91,7 @@ Table::~Table() {
   pthread_cond_signal(&this->cond);
 
   for (int i = 0; i < INDEX_COUNT; i++) {
-    struct Value *v = queue.current(i);
-    while (v != NULL) {
-      struct Value *next = v->next;
-      delete v;
-      v = next;
-    }
+    free_linked_list(queue.current(i));
   }
 
   pthread_mutex_unlock(&this->mutex);
@@ -86,7 +116,11 @@ void Table::put(KEY_TYPE key, uint8_t *value) {
 
   // std::cout << "put: " << key << " index:" << index << std::endl;
 
+  // pthread_mutex_lock(&mutex);
+
   queue.current(index) = v;
+
+  // pthread_mutex_unlock(&mutex);
 }
 
 uint8_t Table::get_by_header(uint8_t *dst, uint8_t *header) {
@@ -100,7 +134,7 @@ uint8_t Table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
   KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
   // std::cout << "search: " << key << " index:" << index << std::endl;
   struct Value *v = queue.current(index);
-  struct Value *garbage = queue.previous(index);
+  struct Value *garbage = queue.last(index);
 
   while (v != garbage) {
     if (memcmp(v->value, sec_key, SECONDARY_KEY_SIZE) == 0) {
