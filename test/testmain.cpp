@@ -1,17 +1,17 @@
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
-
+#include <catch2/catch_test_macros.hpp>
 #include <cstdint>
-
-#include <sstream>
 #include <iostream>
 #include <map>
+#include <sstream>
+#include <thread>
+
 #include "api.h"
 
 // TEST_CASE( "hello() says hello" ) {
 //     std::ostringstream out;
 // 	std::streambuf* coutbuf = std::cout.rdbuf();
-	
+
 //     std::cout.rdbuf(out.rdbuf()); //redirect cout to out
 //     hello("tester");
 // 	hello("you");
@@ -20,9 +20,7 @@
 // 	REQUIRE( out.str() == "Hello, tester!\nHello, you!\n");
 // }
 
-std::uint64_t Fibonacci(std::uint64_t number) {
-    return number < 2 ? 1 : Fibonacci(number - 1) + Fibonacci(number - 2);
-}
+std::uint64_t Fibonacci(std::uint64_t number) { return number < 2 ? 1 : Fibonacci(number - 1) + Fibonacci(number - 2); }
 
 // TEST_CASE("T1") {
 //     table t = table();
@@ -57,43 +55,60 @@ std::uint64_t Fibonacci(std::uint64_t number) {
 // }
 
 TEST_CASE("T3") {
-    Table t = Table();
-    int i = 0;
+  Table t = Table();
+  int i = 0;
 
-    uint8_t frame[FRAME_SIZE] = {0};
-    // get long from the frame, big endian
-    int *key = (int *)frame;
+  uint8_t frame[FRAME_SIZE] = {0};
+  uint8_t dst[SECONDARY_VALUE_SIZE] = {0};
+  // get long from the frame, big endian
+  KEY_TYPE *key = (KEY_TYPE *)frame;
+  int *key2 = (int *)&(frame[4]);
 
-    auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 100'0000; i++) {
-        (*key)++;
-        t.put_frame(frame);
-    }
+  for (int i = 0; i < 100'0000; i++) {
+    (*key) += (1 << (32 - INDEX_BIT_SIZE));
+    (*key2)++;
 
-    auto end = std::chrono::high_resolution_clock::now();
+    // std::cout << "key: " << *key << std::endl;
 
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    printf("T3 took %ld nanoseconds to run \n ", duration.count());
+    REQUIRE(t.get_by_header(dst, frame) == 0);
+
+    t.put_frame(frame);
+
+    REQUIRE(t.get_by_header(dst, frame) != 0);
+  }
+
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+  printf("T3 took %ld nanoseconds to run \n ", duration.count());
+
+  for (int i = 0; i < 10; i++) {
+    std::cout << (t.get_by_header(dst, frame) != 0) << std::endl;
+
+    // sleep 10 seconds
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+  }
 }
 
 TEST_CASE("T4") {
-    OrdinaryTable t = OrdinaryTable();
-    int i = 0;
+  OrdinaryTable t = OrdinaryTable();
+  int i = 0;
 
-    uint8_t frame[FRAME_SIZE] = {0};
-    // get long from the frame, big endian
-    int *key = (int *)frame;
+  uint8_t frame[FRAME_SIZE] = {0};
+  // get long from the frame, big endian
+  int *key = (int *)frame;
 
-    auto start = std::chrono::high_resolution_clock::now();
-    
-    for (int i = 0; i < 100'0000; i++) {
-        (*key)++;
-        t.put_frame(frame);
-    }
+  auto start = std::chrono::high_resolution_clock::now();
 
-    auto end = std::chrono::high_resolution_clock::now();
+  for (int i = 0; i < 100'0000; i++) {
+    (*key)++;
+    t.put_frame(frame);
+  }
 
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    printf("T4 took %ld nanoseconds to run \n ", duration.count());
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+  printf("T4 took %ld nanoseconds to run \n ", duration.count());
 }
