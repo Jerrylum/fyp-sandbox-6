@@ -108,19 +108,18 @@ void Table::put_frame(uint8_t *frame) {
 
 void Table::put(KEY_TYPE key, uint8_t *value) {
   KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
-  struct Value *head = queue.current(index);
-
+  
   struct Value *v = new struct Value;
   memcpy(v->value, value, VALUE_SIZE);
-  v->next = head;
 
-  // std::cout << "put: " << key << " index:" << index << std::endl;
-
-  // pthread_mutex_lock(&mutex);
-
+  // TODO multi mutex
+  
+  pthread_mutex_lock(&mutex);  
+  v->next = queue.current(index);
   queue.current(index) = v;
-
-  // pthread_mutex_unlock(&mutex);
+  pthread_mutex_unlock(&mutex);
+  
+  // std::cout << "put: " << key << " index:" << index << std::endl;
 }
 
 uint8_t Table::get_by_header(uint8_t *dst, uint8_t *header) {
