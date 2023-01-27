@@ -21,6 +21,9 @@
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <unordered_map>
+
+#include "avlmap.h"
 
 #define FRAME_SIZE (128)
 #define FRAME_HEADER_SIZE (32)
@@ -54,12 +57,14 @@ struct ValueQueue {
   struct Value *&current(uint32_t offset = 0) { return data[current_index * INDEX_COUNT + offset]; }
 
   struct Value *&last(uint32_t offset = 0) { return data[garbage_index * INDEX_COUNT + offset]; }
+
+  void destroy();
 };
 
 class Table {
  private:
   struct ValueQueue queue;
-  bool running = false;
+  bool running = true;
 
   pthread_t deamon_thread;
   pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -84,7 +89,37 @@ class OrdinaryTable {
 
  public:
   OrdinaryTable(){};
-  ~OrdinaryTable(){};
+  ~OrdinaryTable();
+
+  void put_frame(uint8_t frame[FRAME_SIZE]);
+  void put(KEY_TYPE key, uint8_t value[VALUE_SIZE]);
+  uint8_t get_by_header(uint8_t dst[SECONDARY_VALUE_SIZE], uint8_t header[FRAME_HEADER_SIZE]);
+  uint8_t get(uint8_t dst[SECONDARY_VALUE_SIZE], KEY_TYPE key, uint8_t sec_key[SECONDARY_KEY_SIZE]);
+};
+
+// extend table
+class UnorderedMapTable {
+ private:
+  std::unordered_map<KEY_TYPE, struct Value *> data;
+
+ public:
+  UnorderedMapTable(){};
+  ~UnorderedMapTable();
+
+  void put_frame(uint8_t frame[FRAME_SIZE]);
+  void put(KEY_TYPE key, uint8_t value[VALUE_SIZE]);
+  uint8_t get_by_header(uint8_t dst[SECONDARY_VALUE_SIZE], uint8_t header[FRAME_HEADER_SIZE]);
+  uint8_t get(uint8_t dst[SECONDARY_VALUE_SIZE], KEY_TYPE key, uint8_t sec_key[SECONDARY_KEY_SIZE]);
+};
+
+// extend table
+class AvlTreeMapTable {
+ private:
+  avl_tree<KEY_TYPE, struct Value *> data;
+
+ public:
+  AvlTreeMapTable(){};
+  ~AvlTreeMapTable();
 
   void put_frame(uint8_t frame[FRAME_SIZE]);
   void put(KEY_TYPE key, uint8_t value[VALUE_SIZE]);
