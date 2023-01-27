@@ -15,6 +15,7 @@ cmake --build build
 cmake --build build && ./build/test/tests
 cmake --build build && ./build/test/tests --benchmark-samples 1000
 cmake --build build && ./build/test/tests --durations yes
+export CFLAGS="-m32"; cmake --build build && valgrind --leak-check=yes ./build/test/tests
 ```
 
 ## Network
@@ -25,6 +26,39 @@ cmake --build build && ./build/test/tests --durations yes
 |Index(24bit)|-|SecKey(28)|SecValue(96)--------|
 |Frame(128)------------------------------------|
 |Header(32)---------------|Encrypted Packet(96)|
+```
+
+```
+random data:
+ - number of inserts per second
+ - number of lookups per second
+ - number of deletes per second
+
+ascending data:
+ - number of inserts per second
+ - number of lookups per second
+ - number of deletes per second 
+ 
+finishing time of one million random data in millisecond:
+ - insert
+ - lookup
+ - delete
+ 
+finishing time of one million ascending data in millisecond:
+ - insert
+ - lookup
+ - delete
+
+response time of the proposed system with 1000 inserts and lookups per second over time (random data)
+ - 1 min
+ - 5 min
+ - 30 min
+
+response time of the proposed system with increasing lookups (random data)
+ - 100
+ - 1000
+ - 10000
+ - 100000
 ```
 
 ## Links to the posts:
