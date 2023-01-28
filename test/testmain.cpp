@@ -271,7 +271,7 @@ TEST_CASE("T1") {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    std::cout << "finishing time of one million random data in microsecond, insert, proposed, " << duration.count()
+    std::cout << "finishing time of one million random data in microsecond, insert, proposed(" << INDEX_BIT_SIZE << "), " << duration.count()
               << std::endl;
 
     i = 0;
@@ -289,7 +289,7 @@ TEST_CASE("T1") {
     end = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    std::cout << "finishing time of one million random data in microsecond, lookup, proposed, " << duration.count()
+    std::cout << "finishing time of one million random data in microsecond, lookup, proposed(" << INDEX_BIT_SIZE << "), " << duration.count()
               << std::endl;
 
     // NO DELETE DATA
@@ -567,7 +567,7 @@ TEST_CASE("T1") {
 
 #pragma region finishing time of one million ascending data in microsecond, (insert, lookup), avl tree
 
-  if (1) {
+  if (0) {
     AvlTreeMapTable t = AvlTreeMapTable();
     i = 0;
     (*key) = 0;
@@ -608,25 +608,27 @@ TEST_CASE("T1") {
     // NO DELETE DATA
   }
 
+#pragma endregion
+
 }
 
-// TEST_CASE("T4") {
-//   AvlTreeMapTable t = AvlTreeMapTable();
-//   int i = 0;
+TEST_CASE("T4") {
+  Table t = Table();
+  int i = 0;
 
-//   uint8_t frame[FRAME_SIZE] = {0};
-//   // get long from the frame, big endian
-//   int* key = (int*)frame;
+  uint8_t frame[FRAME_SIZE] = {0};
+  // get long from the frame, big endian
+  int* key = (int*)frame;
 
-//   auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
 
-//   for (int i = 0; i < 100'0000; i++) {
-//     (*key)++;
-//     t.put_frame(frame);
-//   }
+  for (int i = 0; i < 100'0000; i++) {
+    (*key)++;
+    // t.put_frame(frame);
+  }
 
-//   auto end = std::chrono::high_resolution_clock::now();
+  auto end = std::chrono::high_resolution_clock::now();
 
-//   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-//   printf("T4 took %ld nanoseconds to run \n ", duration.count());
-// }
+  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+  printf("T4 took %ld nanoseconds to run \n ", duration.count());
+}

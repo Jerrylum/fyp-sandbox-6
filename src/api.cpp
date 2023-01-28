@@ -7,7 +7,6 @@
 
 void *table_run(void *param) {
   Table *t = (Table *)param;
-  // t->running = true;
 
   struct timeval now_time;
   struct timespec out_time;
@@ -24,14 +23,7 @@ void *table_run(void *param) {
     if (now_time.tv_sec < out_time.tv_sec) continue;
     out_time.tv_sec = now_time.tv_sec + GENERATION_RENEW_SEC;
 
-    // auto start = std::chrono::high_resolution_clock::now();
-
     t->queue.renew();
-
-    // auto end = std::chrono::high_resolution_clock::now();
-
-    // std::cout << "renew time: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-    //           << std::endl;
 
     std::cout << "table run" << std::endl;
   }
@@ -123,8 +115,6 @@ void Table::put(KEY_TYPE key, uint8_t *value) {
   v->next = queue.current(index);
   queue.current(index) = v;
   pthread_mutex_unlock(&mutex);
-
-  // std::cout << "put: " << key << " index:" << index << std::endl;
 }
 
 uint8_t Table::get_by_header(uint8_t *dst, uint8_t *header) {
@@ -136,7 +126,6 @@ uint8_t Table::get_by_header(uint8_t *dst, uint8_t *header) {
 
 uint8_t Table::get(uint8_t *dst, KEY_TYPE key, uint8_t *sec_key) {
   KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
-  // std::cout << "search: " << key << " index:" << index << std::endl;
   struct Value *v = queue.current(index);
   struct Value *garbage = queue.last(index);
 
