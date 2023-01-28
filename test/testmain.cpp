@@ -188,7 +188,7 @@ TEST_CASE("T1") {
 
 #pragma endregion
 
-#pragma region ascending data, number of lookups per second, (proposed, ordinary)
+#pragma region ascending data, number of inserts per second, (proposed, ordinary)
 
   if (0) {
     Table t = Table();
@@ -202,7 +202,7 @@ TEST_CASE("T1") {
       t.put_frame(frame);
       i++;
     }
-    std::cout << "ascending data, number of lookups per second, proposed, " << i << std::endl;
+    std::cout << "ascending data, number of inserts per second, proposed, " << i << std::endl;
   }
 
   if (0) {
@@ -217,7 +217,7 @@ TEST_CASE("T1") {
       t.put_frame(frame);
       i++;
     }
-    std::cout << "ascending data, number of lookups per second, ordinary, " << i << std::endl;
+    std::cout << "ascending data, number of inserts per second, ordinary, " << i << std::endl;
   }
 
   if (0) {
@@ -232,7 +232,7 @@ TEST_CASE("T1") {
       t.put_frame(frame);
       i++;
     }
-    std::cout << "ascending data, number of lookups per second, unordered, " << i << std::endl;
+    std::cout << "ascending data, number of inserts per second, unordered, " << i << std::endl;
   }
 
   if (0) {
@@ -247,7 +247,7 @@ TEST_CASE("T1") {
       t.put_frame(frame);
       i++;
     }
-    std::cout << "ascending data, number of lookups per second, avl tree, " << i << std::endl;
+    std::cout << "ascending data, number of inserts per second, avl tree, " << i << std::endl;
   }
 
 #pragma endregion
