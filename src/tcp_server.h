@@ -22,8 +22,10 @@
 #include <cstring>
 #include <iostream>
 
-#define INPUT_BUFFER_SIZE 100  // test: 100 bytes of buffer
-#define DEFAULT_PORT 9034
+#define SERVER_DEBUG
+
+#define INPUT_BUFFER_SIZE (256 + 1)  // Byte, 8 headers in total
+#define DEFAULT_PORT (25000)
 
 class Server {
  public:
@@ -42,7 +44,7 @@ class Server {
 
   // callback setters
   void onConnect(void (*ncc)(uint16_t fd));
-  void onInput(void (*rc)(uint16_t fd, char *buffer));
+  void onInput(void (*rc)(uint16_t fd, char *buffer, uint32_t size));
   void onDisconnect(void (*dc)(uint16_t fd));
 
   uint16_t sendMessage(Connector conn, const char *messageBuffer);
@@ -71,7 +73,7 @@ class Server {
   // int numbytes;
 
   void (*newConnectionCallback)(uint16_t fd);
-  void (*receiveCallback)(uint16_t fd, char *buffer);
+  void (*receiveCallback)(uint16_t fd, char *buffer, uint32_t size);
   void (*disconnectCallback)(uint16_t fd);
 
   // function prototypes

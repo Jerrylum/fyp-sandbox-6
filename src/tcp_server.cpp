@@ -138,7 +138,7 @@ void Server::recvInputFromExisting(int fd) {
 #ifdef SERVER_DEBUG
   printf("[SERVER] [RECV] Received '%s' from client!\n", input_buffer);
 #endif
-  receiveCallback(fd, input_buffer);
+  receiveCallback(fd, input_buffer, nbytesrecv);
   // memset(&input_buffer, 0, INPUT_BUFFER_SIZE); //zero buffer //bzero
   bzero(&input_buffer, INPUT_BUFFER_SIZE);  // clear input buffer
 }
@@ -178,7 +178,7 @@ void Server::init() {
   startListen();
 }
 
-void Server::onInput(void (*rc)(uint16_t fd, char *buffer)) { receiveCallback = rc; }
+void Server::onInput(void (*rc)(uint16_t fd, char *buffer, uint32_t size)) { receiveCallback = rc; }
 
 void Server::onConnect(void (*ncc)(uint16_t)) { newConnectionCallback = ncc; }
 

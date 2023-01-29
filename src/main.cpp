@@ -1,20 +1,101 @@
+#include <thread>
+
 #include "api.h"
 
+static void* test_client_thread(void* param) {
+  std::this_thread::sleep_for(std::chrono::milliseconds((long)param));
+
+  std::cout << "Start connecting to the server!" << std::endl;
+
+  // create a message buffer
+  char msg[1500];
+
+  const int port = 25000;
+  struct hostent* host = gethostbyname("0.0.0.0");
+
+  sockaddr_in sendSockAddr;
+  bzero((char*)&sendSockAddr, sizeof(sendSockAddr));
+  sendSockAddr.sin_family = AF_INET;
+  sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)*host->h_addr_list));
+  sendSockAddr.sin_port = htons(port);
+
+  int clientSd = socket(AF_INET, SOCK_STREAM, 0);
+
+  int status = connect(clientSd, (sockaddr*)&sendSockAddr, sizeof(sendSockAddr));
+  if (status < 0) {
+    std::cout << "Error connecting to socket!" << std::endl;
+    return NULL;
+  }
+  std::cout << "Connected to the server!" << std::endl;
+
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+
+  // int bytesRead, bytesWritten = 0;
+  // struct timeval start1, end1;
+  // gettimeofday(&start1, NULL);
+  // while (1) {
+  //   std::cout << ">";
+  //   std::string data;
+  //   getline(cin, data);
+  //   memset(&msg, 0, sizeof(msg));  // clear the buffer
+  //   strcpy(msg, data.c_str());
+  //   if (data == "exit") {
+  //     send(clientSd, (char*)&msg, strlen(msg), 0);
+  //     break;
+  //   }
+  //   bytesWritten += send(clientSd, (char*)&msg, strlen(msg), 0);
+  //   cout << "Awaiting server response..." << endl;
+  //   memset(&msg, 0, sizeof(msg));  // clear the buffer
+  //   bytesRead += recv(clientSd, (char*)&msg, sizeof(msg), 0);
+  //   if (!strcmp(msg, "exit")) {
+  //     cout << "Server has quit the session" << endl;
+  //     break;
+  //   }
+  //   cout << "Server: " << msg << endl;
+  // }
+  // gettimeofday(&end1, NULL);
+  close(clientSd);
+
+  std::cout << "Connection closed" << std::endl;
+
+  pthread_exit(NULL);
+
+  return NULL;
+}
+
+static void test_client(long delay) {
+  pthread_t t;
+  pthread_create(&t, NULL, test_client_thread, (void*)delay);
+}
 
 static Server server;
 
-static void handle_server_connection(uint16_t fd) {
+static void handle_server_connection(uint16_t fd) { std::cout << "connect: " << fd << std::endl; }
 
+static void handle_client_income(uint16_t fd, char* buffer, uint32_t size) {
+  std::cout << "income: " << size << std::endl;
 }
 
+static void handle_client_disconnect(uint16_t fd) { std::cout << "disconnect: " << fd << std::endl; }
+
 int main() {
+  test_client(1000);
+  test_client(2000);
+  test_client(3000);
+
+  test_client(8000);
 
 
 
+  server.onConnect(handle_server_connection);
+  server.onDisconnect(handle_client_disconnect);
+  server.onInput(handle_client_income);
+  server.init();
 
-
-
-
+  // actual main loop
+  while (true) {
+    server.loop();
+  }
 
   // hello("CMake");
 
@@ -43,4 +124,3 @@ int main() {
 
   return 0;
 }
-
