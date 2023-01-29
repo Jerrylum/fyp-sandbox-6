@@ -24,6 +24,7 @@
 #include <unordered_map>
 
 #include "avlmap.h"
+#include "tcp_server.h"
 
 #define FRAME_SIZE (128)
 #define FRAME_HEADER_SIZE (32)
