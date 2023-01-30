@@ -612,20 +612,56 @@ TEST_CASE("T1") {
 
 }
 
-TEST_CASE("T4") {
-  Table t = Table();
+// TEST_CASE("T4") {
+//   Table t = Table();
+//   int i = 0;
+
+//   uint8_t frame[FRAME_SIZE] = {0};
+//   // get long from the frame, big endian
+//   int* key = (int*)frame;
+
+//   auto start = std::chrono::high_resolution_clock::now();
+
+//   for (int i = 0; i < 100'0000; i++) {
+//     (*key)++;
+//     // t.put_frame(frame);
+//   }
+
+//   auto end = std::chrono::high_resolution_clock::now();
+
+//   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+//   printf("T4 took %ld nanoseconds to run \n ", duration.count());
+// }
+
+TEST_CASE("T5") {
+  ListenerTable t = ListenerTable();
   int i = 0;
 
-  uint8_t frame[FRAME_SIZE] = {0};
+  uint8_t frame[FRAME_SIZE] = {0}; // 32 * 4
+  for (int i = 0; i < FRAME_SIZE; i++) frame[i] = rand();
+
   // get long from the frame, big endian
   int* key = (int*)frame;
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  for (int i = 0; i < 100'0000; i++) {
-    (*key)++;
-    // t.put_frame(frame);
-  }
+  t.listen(0, frame, 1);
+  t.listen(123, frame + 32, 2);
+  t.listen(65535, frame + 32 + 32 + 32, 1);
+
+  REQUIRE(t.pull(frame) == 0);
+  REQUIRE(t.pull(frame) == -1);
+  REQUIRE(t.pull(frame + 32 + 32) == 123);
+  REQUIRE(t.pull(frame + 32 + 32) == -1);
+  REQUIRE(t.pull(frame + 32) == 123);
+  REQUIRE(t.pull(frame + 32) == -1);
+  REQUIRE(t.pull(frame + 32 + 32 + 32) == 65535);
+  REQUIRE(t.pull(frame + 32 + 32 + 32) == -1);
+
+  // for (int i = 0; i < 65536; i++) {
+  //   // (*key)++;
+  //   t.remove(i);
+  // }
 
   auto end = std::chrono::high_resolution_clock::now();
 

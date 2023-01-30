@@ -5,6 +5,102 @@
 #include <chrono>
 #include <thread>
 
+ListenerTable::ListenerTable() {
+  by_requests = (ListenRequest **)malloc(sizeof(ListenRequest *) * INDEX_COUNT);
+  by_listeners = (ListenRequest **)malloc(sizeof(ListenRequest *) * 65536 * MAXIMUM_REQUEST);
+}
+
+ListenerTable::~ListenerTable() {
+  for (int i = 0; i < INDEX_COUNT; i++) {
+    ListenRequest *request = by_requests[i];
+    while (request != NULL) {
+      ListenRequest *next = request->next;
+      free(request);
+      request = next;
+    }
+  }
+
+  free(by_requests);
+  free(by_listeners);
+}
+
+int32_t ListenerTable::pull(uint8_t header[FRAME_HEADER_SIZE]) {
+  uint16_t listener = 0;
+
+  KEY_TYPE key = *(uint32_t *)header;
+  KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
+
+  struct ListenRequest *request = by_requests[index];
+  while (request != NULL) {
+    if (memcmp(request->header, header, FRAME_HEADER_SIZE) != 0) {
+      request = request->next;
+      continue;
+    }
+
+    listener = request->listener;
+
+    // remove from by_listeners
+    for (uint8_t i = 0; i < MAXIMUM_REQUEST; i++) {
+      if (by_listeners[listener * MAXIMUM_REQUEST + i] == request) {
+        by_listeners[listener * MAXIMUM_REQUEST + i] = NULL;
+      }
+    }
+
+    remove_from_bucket(request);
+    return listener;
+  }
+
+  return -1;
+}
+
+void ListenerTable::listen(uint16_t fd, uint8_t *headers, uint8_t count) {
+  remove(fd);
+
+  for (int i = 0; i < count && i < MAXIMUM_REQUEST; i++) {
+    struct ListenRequest *request = new ListenRequest();
+    memcpy(request->header, headers + i * FRAME_HEADER_SIZE, FRAME_HEADER_SIZE);
+    request->listener = fd;
+
+    insert_to_bucket(request);
+
+    by_listeners[fd * MAXIMUM_REQUEST + i] = request;
+  }
+}
+
+void ListenerTable::remove(uint16_t fd) {
+  for (uint8_t i = 0; i < MAXIMUM_REQUEST; i++) {
+    remove_from_bucket(by_listeners[fd * MAXIMUM_REQUEST + i]);
+  }
+}
+
+void ListenerTable::remove_from_bucket(ListenRequest *request) {
+  if (request == NULL) return;
+
+  if (request->previous != NULL) {
+    request->previous->next = request->next;
+  } else {
+    KEY_TYPE key = *(uint32_t *)request->header;
+    KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
+    by_requests[index] = request->next;
+  }
+
+  delete request;
+}
+
+void ListenerTable::insert_to_bucket(ListenRequest *request) {
+  KEY_TYPE key = *(uint32_t *)request->header;
+  KEY_TYPE index = key >> (KEY_SIZE * 8 - INDEX_BIT_SIZE);
+
+  struct ListenRequest *head = by_requests[index];
+  if (head == NULL) {
+    by_requests[index] = request;
+  } else {
+    request->next = head;
+    head->previous = request;
+    by_requests[index] = request;
+  }
+}
+
 void *table_run(void *param) {
   Table *t = (Table *)param;
 
@@ -23,7 +119,7 @@ void *table_run(void *param) {
     if (now_time.tv_sec < out_time.tv_sec) continue;
     out_time.tv_sec = now_time.tv_sec + GENERATION_RENEW_SEC;
 
-    t->queue.renew();
+    t->queue.renew(&t->mutex);
 
     std::cout << "table run" << std::endl;
   }
@@ -47,8 +143,8 @@ void ValueQueue::init() {
   for (int i = 0; i < GENERATION_COUNT * INDEX_COUNT; i++) data[i] = NULL;
 }
 
-void ValueQueue::renew() {
-  pthread_mutex_lock(&mutex);
+void ValueQueue::renew(pthread_mutex_t *mutex) {
+  pthread_mutex_lock(mutex);
 
   garbage_index = (garbage_index + 1) % GENERATION_COUNT;
   uint32_t next_index = (current_index + 1) % GENERATION_COUNT;
@@ -56,7 +152,7 @@ void ValueQueue::renew() {
   std::cout << "renew: " << current_index << " -> " << next_index << std::endl;
   current_index = next_index;
 
-  pthread_mutex_unlock(&mutex);
+  pthread_mutex_unlock(mutex);
 
   for (int i = 0; i < INDEX_COUNT; i++) {
     struct Value *garbage_v = last(i);
@@ -82,7 +178,7 @@ Table::Table() {
   std::cout << "table constructor" << std::endl;
 }
 
-Table::~Table() { 
+Table::~Table() {
   std::cout << "table destructor" << std::endl;
 
   this->running = false;

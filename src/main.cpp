@@ -69,11 +69,44 @@ static void test_client(long delay) {
 }
 
 static Server server;
+static Table* table;
 
 static void handle_server_connection(uint16_t fd) { std::cout << "connect: " << fd << std::endl; }
 
 static void handle_client_income(uint16_t fd, char* buffer, uint32_t size) {
+  if ((size - 1) % 32 != 0) {
+    std::cout << "incorrect income with size " << size << std::endl;  
+    return;
+  }
+
   std::cout << "income: " << size << std::endl;
+
+  uint8_t operation = buffer[0]; // 0 = send, 1 = listen
+
+  if (operation == 0) {
+    if (0) {
+
+    } else {
+      table->put_frame((uint8_t*)buffer + 1);
+    }
+  } else if (operation == 1) {
+    uint8_t frame[FRAME_SIZE] = {0};
+
+    uint32_t count = (size - 1) / 32;
+    for (uint32_t i = 0; i < count; i++) {
+      uint32_t offset = 1 + i * 32;
+
+      if (table->get_by_header(frame + 32, (uint8_t *)buffer + offset)) {
+        memcpy(frame, buffer + offset, 32);
+        server.sendData((Server::Connector){fd}, (char*)frame, FRAME_SIZE);
+      } else {
+
+      }
+    }
+  } else {
+    std::cout << "incorrect operation " << operation << std::endl;
+  }
+
 }
 
 static void handle_client_disconnect(uint16_t fd) { std::cout << "disconnect: " << fd << std::endl; }
@@ -85,7 +118,7 @@ int main() {
 
   test_client(8000);
 
-
+  table = new Table();
 
   server.onConnect(handle_server_connection);
   server.onDisconnect(handle_client_disconnect);
@@ -96,6 +129,8 @@ int main() {
   while (true) {
     server.loop();
   }
+
+  delete table;
 
   // hello("CMake");
 

@@ -40,6 +40,37 @@
 #define GENERATION_COUNT 6
 #define GENERATION_RENEW_SEC 15
 
+#define MAXIMUM_REQUEST 8
+
+struct ListenRequest {
+  struct ListenRequest *next;  // order matter
+  struct ListenRequest *previous;
+  uint8_t header[FRAME_HEADER_SIZE];
+  uint16_t listener;
+
+  ListenRequest() {
+    next = NULL;
+    previous = NULL;
+  }
+};
+
+class ListenerTable {
+ private:
+  struct ListenRequest** by_requests;
+  struct ListenRequest** by_listeners;
+
+  void remove_from_bucket(ListenRequest *request);
+  void insert_to_bucket(ListenRequest *request);
+
+ public:
+  ListenerTable();
+  ~ListenerTable();
+
+  int32_t pull(uint8_t header[FRAME_HEADER_SIZE]);
+  void listen(uint16_t fd, uint8_t* headers, uint8_t count);
+  void remove(uint16_t fd);
+};
+
 struct Value {
   uint8_t value[VALUE_SIZE];
   struct Value *next;
@@ -49,11 +80,10 @@ struct ValueQueue {
   struct Value **data;
   uint32_t current_index = 0;
   uint32_t garbage_index = 1;
-  pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
   void init();
 
-  void renew();
+  void renew(pthread_mutex_t* mutex);
 
   struct Value *&current(uint32_t offset = 0) { return data[current_index * INDEX_COUNT + offset]; }
 
