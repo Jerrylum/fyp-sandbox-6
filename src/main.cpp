@@ -89,7 +89,7 @@ int main() {
 
   server.onConnect(handle_server_connection);
   server.onDisconnect(handle_client_disconnect);
-  server.onInput(handle_client_income);
+  server.onRecvData(handle_client_income);
   server.init();
 
   // actual main loop
