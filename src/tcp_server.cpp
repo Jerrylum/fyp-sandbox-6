@@ -1,16 +1,3 @@
-/*
- * Server.cpp
- *
- * EventServer is a simple C++ TCP socket server implementation,
- * built to simplify socket programming (and to serve as an example to anyone who wants to learn it!)
- * It can interface with the rest of your program using three callback functions.
- * - onConnect, which fires when a new client connects. the client's fd is passed.
- * - onDisconnect, which fires when a client disconnects. passes fd.
- * - onRecvData, fires when input is received from a client. passes fd and char*
- *
- * define SERVER_DEBUG to spew out some juicy debug data!
- */
-
 #include "tcp_server.h"
 
 #ifdef SERVER_DEBUG

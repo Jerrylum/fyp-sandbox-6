@@ -79,13 +79,6 @@ static ListenerTable* listener_table;
 static void handle_server_connection(uint16_t fd) { std::cout << "connect: " << fd << std::endl; }
 
 static void handle_client_income(uint16_t fd, char* buffer, uint32_t size) {
-  if ((size - 1) % 32 != 0) {
-    std::cout << "incorrect income with size " << size << std::endl;
-    return;
-  }
-
-  std::cout << "income: " << size << std::endl;
-
   uint8_t operation = buffer[0];  // 0 = send, 1 = listen
 
   if (operation == 0 && size == 129) {
@@ -97,7 +90,7 @@ static void handle_client_income(uint16_t fd, char* buffer, uint32_t size) {
       table->put_frame((uint8_t*)buffer + 1);
       std::cout << "B: " << fd << std::endl;
     }
-  } else if (operation == 1) {
+  } else if (operation == 1 && (size - 1) % 32 == 0) {
     uint8_t frame[FRAME_SIZE] = {0};
 
     uint32_t count = (size - 1) / 32;
@@ -126,12 +119,12 @@ static void handle_client_disconnect(uint16_t fd) {
 }
 
 int main() {
-  for (int i = 1; i < 129; i++) {
-    testing_msg[i] = rand();
-  }
+  // for (int i = 1; i < 129; i++) {
+  //   testing_msg[i] = rand();
+  // }
 
-  test_client(2000, test_client_thread1);
-  test_client(1000, test_client_thread2);
+  // test_client(2000, test_client_thread1);
+  // test_client(1000, test_client_thread2);
 
   table = new Table();
   listener_table = new ListenerTable();
@@ -141,38 +134,11 @@ int main() {
   server.onRecvData(handle_client_income);
   server.init();
 
-  // actual main loop
   while (true) {
     server.loop();
   }
 
   delete table;
   delete listener_table;
-
-  // hello("CMake");
-
-  // OrdinaryTable t = OrdinaryTable();
-
-  // uint8_t frame[FRAME_SIZE] = {0};
-  // getrandom(frame, FRAME_SIZE, 0);
-
-  // t.put_frame(frame);
-
-  // uint8_t dst[SECONDARY_VALUE_SIZE] = {0};
-  // t.get_by_header(dst, frame);
-
-  // printf("\nFra: ");
-
-  // for (int i = 0; i < FRAME_SIZE; i++) {
-  //   printf("%02x ", frame[i]);
-  // }
-
-  // printf("\nDST: ");
-
-  // // print dst
-  // for (int i = 0; i < SECONDARY_VALUE_SIZE; i++) {
-  //   printf("%02x ", dst[i]);
-  // }
-
   return 0;
 }

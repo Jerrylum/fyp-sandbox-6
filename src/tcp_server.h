@@ -22,7 +22,7 @@
 #include <cstring>
 #include <iostream>
 
-#define SERVER_DEBUG
+// #define SERVER_DEBUG
 
 #define INPUT_BUFFER_SIZE (256 + 1)  // Byte, 8 headers in total
 #define DEFAULT_PORT (25000)
