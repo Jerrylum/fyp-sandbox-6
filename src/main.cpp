@@ -82,7 +82,7 @@ static void handle_client_income(uint16_t fd, char* buffer, uint32_t size) {
   uint8_t operation = buffer[0];  // 0 = send, 1 = listen
 
   if (operation == 0 && size == 129) {
-    int32_t listener = listener_table->pull((uint8_t*)buffer + 1);
+    int32_t listener = listener_table->pull(fd, (uint8_t*)buffer + 1);
     if (listener != -1) {
       server.sendData((Server::Connector){listener}, buffer + 1, size - 1);
       std::cout << "A: " << fd << ", " << listener << std::endl;

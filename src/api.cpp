@@ -24,7 +24,7 @@ ListenerTable::~ListenerTable() {
   free(by_listeners);
 }
 
-int32_t ListenerTable::pull(uint8_t header[FRAME_HEADER_SIZE]) {
+int32_t ListenerTable::pull(uint16_t fd, uint8_t header[FRAME_HEADER_SIZE]) {
   uint16_t listener = 0;
 
   KEY_TYPE key = *(uint32_t *)header;
@@ -32,7 +32,7 @@ int32_t ListenerTable::pull(uint8_t header[FRAME_HEADER_SIZE]) {
 
   struct ListenRequest *request = by_requests[index];
   while (request != NULL) {
-    if (memcmp(request->header, header, FRAME_HEADER_SIZE) != 0) {
+    if (request->listener == fd || memcmp(request->header, header, FRAME_HEADER_SIZE) != 0) {
       request = request->next;
       continue;
     }

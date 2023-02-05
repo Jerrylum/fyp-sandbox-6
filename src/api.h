@@ -66,7 +66,7 @@ class ListenerTable {
   ListenerTable();
   ~ListenerTable();
 
-  int32_t pull(uint8_t header[FRAME_HEADER_SIZE]);
+  int32_t pull(uint16_t fd, uint8_t header[FRAME_HEADER_SIZE]);
   void listen(uint16_t fd, uint8_t* headers, uint8_t count);
   void remove(uint16_t fd);
 };
