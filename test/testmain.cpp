@@ -66,41 +66,41 @@ void run(bool& running, uint32_t ms) {
   pthread_create(&thread, NULL, timed_request, tr);
 }
 
-// TEST_CASE("T0") {
-//   Table t = Table();
-//   int i = 0;
+TEST_CASE("T0") {
+  Table t = Table();
+  int i = 0;
 
-//   uint8_t frame[FRAME_SIZE] = {0};
-//   uint8_t dst[SECONDARY_VALUE_SIZE] = {0};
-//   // get long from the frame, big endian
-//   KEY_TYPE *key = (KEY_TYPE *)frame;
-//   int *key2 = (int *)&(frame[4]);
+  uint8_t frame[FRAME_SIZE] = {0};
+  uint8_t dst[SECONDARY_VALUE_SIZE] = {0};
+  // get long from the frame, big endian
+  KEY_TYPE *key = (KEY_TYPE *)frame;
+  int *key2 = (int *)&(frame[4]);
 
-//   auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
 
-//   for (int i = 0; i < 100'0000; i++) {
-//     (*key) += (1 << (32 - INDEX_BIT_SIZE));
-//     (*key2)++;
+  for (int i = 0; i < 100'0000; i++) {
+    (*key) += (1 << (32 - INDEX_BIT_SIZE));
+    (*key2)++;
 
-//     // REQUIRE(t.get_by_header(dst, frame) == 0);
+    REQUIRE(t.get_by_header(dst, frame) == 0);
 
-//     t.put_frame(frame);
+    t.put_frame(frame);
 
-//     // REQUIRE(t.get_by_header(dst, frame) != 0);
+    REQUIRE(t.get_by_header(dst, frame) != 0);
+  }
+
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+  printf("T3 took %ld nanoseconds to run \n ", duration.count());
+
+//   for (int i = 0; i < 10; i++) {
+//     std::cout << (t.get_by_header(dst, frame) != 0) << std::endl;
+
+//     // sleep 10 seconds
+//     std::this_thread::sleep_for(std::chrono::seconds(10));
 //   }
-
-//   auto end = std::chrono::high_resolution_clock::now();
-
-//   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-//   printf("T3 took %ld nanoseconds to run \n ", duration.count());
-
-// //   for (int i = 0; i < 10; i++) {
-// //     std::cout << (t.get_by_header(dst, frame) != 0) << std::endl;
-
-// //     // sleep 10 seconds
-// //     std::this_thread::sleep_for(std::chrono::seconds(10));
-// //   }
-// }
+}
 
 TEST_CASE("T1") {
   int i = 0;

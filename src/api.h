@@ -43,7 +43,7 @@
 #define MAXIMUM_REQUEST 8
 
 struct ListenRequest {
-  struct ListenRequest *next;  // order matter
+  struct ListenRequest *next;  // order shouldn't matter
   struct ListenRequest *previous;
   uint8_t header[FRAME_HEADER_SIZE];
   uint16_t listener;
@@ -54,10 +54,15 @@ struct ListenRequest {
   }
 };
 
+/**
+ * Listener Table is a new data structure that is used to store the listeners.
+ *
+ * It is a hash table with two buckets.
+ */
 class ListenerTable {
  private:
-  struct ListenRequest** by_requests;
-  struct ListenRequest** by_listeners;
+  struct ListenRequest **by_requests;
+  struct ListenRequest **by_listeners;
 
   void remove_from_bucket(ListenRequest *request);
   void insert_to_bucket(ListenRequest *request);
@@ -67,15 +72,21 @@ class ListenerTable {
   ~ListenerTable();
 
   int32_t pull(uint16_t fd, uint8_t header[FRAME_HEADER_SIZE]);
-  void listen(uint16_t fd, uint8_t* headers, uint8_t count);
+  void listen(uint16_t fd, uint8_t *headers, uint8_t count);
   void remove(uint16_t fd);
 };
 
+/**
+ * Node
+ */
 struct Value {
   uint8_t value[VALUE_SIZE];
   struct Value *next;
 };
 
+/**
+ * Value Queue is a circular queue of Value pointers with a garbage collector.
+ */
 struct ValueQueue {
   struct Value **data;
   uint32_t current_index = 0;
@@ -83,11 +94,11 @@ struct ValueQueue {
 
   void init();
 
-  void renew(pthread_mutex_t* mutex);
+  void renew(pthread_mutex_t *mutex);
 
-  struct Value *&current(uint32_t offset = 0) { return data[current_index * INDEX_COUNT + offset]; }
+  struct Value *&current(uint32_t offset = 0);
 
-  struct Value *&last(uint32_t offset = 0) { return data[garbage_index * INDEX_COUNT + offset]; }
+  struct Value *&last(uint32_t offset = 0);
 
   void destroy();
 };

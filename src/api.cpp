@@ -24,6 +24,12 @@ ListenerTable::~ListenerTable() {
   free(by_listeners);
 }
 
+/**
+ * @brief Return the listener fd if there is a listener for the header
+ *
+ * How it works:
+ *
+ */
 int32_t ListenerTable::pull(uint16_t fd, uint8_t header[FRAME_HEADER_SIZE]) {
   uint16_t listener = 0;
 
@@ -53,6 +59,9 @@ int32_t ListenerTable::pull(uint16_t fd, uint8_t header[FRAME_HEADER_SIZE]) {
   return -1;
 }
 
+/**
+ * It first removes all the listening requests for the fd. Then, it adds the new listening requests to the table.
+ */
 void ListenerTable::listen(uint16_t fd, uint8_t *headers, uint8_t count) {
   remove(fd);
 
@@ -67,6 +76,9 @@ void ListenerTable::listen(uint16_t fd, uint8_t *headers, uint8_t count) {
   }
 }
 
+/**
+ * It removes all the listening requests for the fd.
+*/
 void ListenerTable::remove(uint16_t fd) {
   for (uint8_t i = 0; i < MAXIMUM_REQUEST; i++) {
     remove_from_bucket(by_listeners[fd * MAXIMUM_REQUEST + i]);
@@ -162,6 +174,10 @@ void ValueQueue::renew(pthread_mutex_t *mutex) {
     garbage_v->next = NULL;
   }
 }
+
+struct Value *&ValueQueue::current(uint32_t offset) { return data[current_index * INDEX_COUNT + offset]; }
+
+struct Value *&ValueQueue::last(uint32_t offset) { return data[garbage_index * INDEX_COUNT + offset]; }
 
 void ValueQueue::destroy() {
   for (int i = 0; i < INDEX_COUNT; i++) {

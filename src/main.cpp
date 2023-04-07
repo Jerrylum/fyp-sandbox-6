@@ -76,8 +76,19 @@ static Server server;
 static Table* table;
 static ListenerTable* listener_table;
 
+/**
+ * This function is called when a new client is connected to the server. It will print the client's file descriptor.
+ */
 static void handle_server_connection(uint16_t fd) { std::cout << "connect: " << fd << std::endl; }
 
+/**
+ * This function is called when the server receives data from a client. It will process the messages from the client.
+ * There are two types of messages: Operation 0 is "Send". The client sends a frame to the server. The server will store
+ * the frame in the table and send the frame to the client that is listening for the frame. Operation 1 is "Send".
+ * client sends a list of headers to the server. The server will store the client's file descriptor and the headers in
+ * the listener table. When the server receives a frame that matches one of the headers, it will send the frame to the
+ * client. The corresponding pseudo code can be found in figure 13.
+ */
 static void handle_client_income(uint16_t fd, char* buffer, uint32_t size) {
   uint8_t operation = buffer[0];  // 0 = send, 1 = listen
 
@@ -113,11 +124,18 @@ static void handle_client_income(uint16_t fd, char* buffer, uint32_t size) {
   }
 }
 
+/**
+ * This function is called when a client disconnects from the server. It will remove the client from the listener table.
+ */
 static void handle_client_disconnect(uint16_t fd) {
   std::cout << "disconnect: " << fd << std::endl;
   listener_table->remove(fd);
 }
 
+/**
+ * This is the entry point of the program. It first create a table and a listener table instance. Then, configure the
+ * server and start the server loop.
+ */
 int main() {
   // for (int i = 1; i < 129; i++) {
   //   testing_msg[i] = rand();
