@@ -12,7 +12,7 @@ static ListenerTable* listener_table;
 /**
  * This function is called when a new client is connected to the server. It will print the client's file descriptor.
  */
-static void handle_server_connection(uint16_t fd) { std::cout << "connect: " << fd << std::endl; }
+static void handle_server_connection(uint16_t fd) { std::cout << "Connected " << fd << std::endl; }
 
 /**
  * This function is called when the server receives data from a client. It will process the messages from the client.
@@ -87,7 +87,7 @@ ERROR:
  * This function is called when a client disconnects from the server. It will remove the client from the listener table.
  */
 static void handle_client_disconnect(uint16_t fd) {
-  std::cout << "disconnect: " << fd << std::endl;
+  std::cout << "Disconnected " << fd << std::endl;
   listener_table->remove(fd);
 }
 

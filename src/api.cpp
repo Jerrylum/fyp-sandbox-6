@@ -130,7 +130,7 @@ void *table_run(void *param) {
   struct timeval now_time;
   struct timespec out_time;
 
-  std::cout << "table run start" << std::endl;
+  // std::cout << "table run start" << std::endl;
 
   while (t->running) {
     pthread_mutex_lock(&t->mutex);
@@ -144,10 +144,10 @@ void *table_run(void *param) {
 
     t->queue.renew(&t->mutex);
 
-    std::cout << "table run" << std::endl;
+    // std::cout << "table run" << std::endl;
   }
 
-  std::cout << "table run end" << std::endl;
+  // std::cout << "table run end" << std::endl;
 
   return nullptr;
 }
@@ -172,7 +172,7 @@ void ValueQueue::renew(pthread_mutex_t *mutex) {
   garbage_index = (garbage_index + 1) % GENERATION_COUNT;
   uint32_t next_index = (current_index + 1) % GENERATION_COUNT;
   memcpy(&data[next_index * INDEX_COUNT], &data[current_index * INDEX_COUNT], sizeof(struct Value *) * INDEX_COUNT);
-  std::cout << "renew: " << current_index << " -> " << next_index << std::endl;
+  // std::cout << "renew: " << current_index << " -> " << next_index << std::endl;
   current_index = next_index;
 
   pthread_mutex_unlock(mutex);
@@ -202,11 +202,11 @@ Table::Table() {
 
   queue.init();
 
-  std::cout << "table constructor" << std::endl;
+  // std::cout << "table constructor" << std::endl;
 }
 
 Table::~Table() {
-  std::cout << "table destructor" << std::endl;
+  // std::cout << "table destructor" << std::endl;
 
   this->running = false;
   pthread_cond_signal(&this->cond);
