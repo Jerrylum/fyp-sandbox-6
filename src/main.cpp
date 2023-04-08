@@ -96,12 +96,7 @@ static void handle_client_disconnect(uint16_t fd) {
  * server and start the server loop.
  */
 int main() {
-  // for (int i = 1; i < 129; i++) {
-  //   testing_msg[i] = rand();
-  // }
-
-  // test_client(2000, test_client_thread1);
-  // test_client(1000, test_client_thread2);
+  std::cout << "Starting server" << std::endl;
 
   table = new Table();
   listener_table = new ListenerTable();
