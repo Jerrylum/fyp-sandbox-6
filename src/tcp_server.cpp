@@ -70,6 +70,16 @@ void Server::handleNewConnection() {
   socklen_t addrlen = sizeof(client_addr);
   temp_fd = accept(master_fd, (struct sockaddr *)&client_addr, &addrlen);
 
+  // keep alive until 20 seconds later, then send 3 probes, each 10 seconds apart
+  int optval = 1;
+  setsockopt(temp_fd, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
+  optval = 20;
+  setsockopt(temp_fd, IPPROTO_TCP, TCP_KEEPIDLE, &optval, sizeof(optval));
+  optval = 3;
+  setsockopt(temp_fd, IPPROTO_TCP, TCP_KEEPCNT, &optval, sizeof(optval));
+  optval = 10;
+  setsockopt(temp_fd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, sizeof(optval));
+
   if (temp_fd < 0) {
     perror("[SERVER] [ERROR] accept() failed");
     return;

@@ -10,6 +10,76 @@
 
 std::uint64_t Fibonacci(std::uint64_t number) { return number < 2 ? 1 : Fibonacci(number - 1) + Fibonacci(number - 2); }
 
+static uint8_t testing_msg[129];
+
+static void* test_client_thread1(void* param) {
+  std::this_thread::sleep_for(std::chrono::milliseconds((long)param));
+
+  const int port = 25000;
+  struct hostent* host = gethostbyname("0.0.0.0");
+
+  sockaddr_in sendSockAddr;
+  bzero((char*)&sendSockAddr, sizeof(sendSockAddr));
+  sendSockAddr.sin_family = AF_INET;
+  sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)*host->h_addr_list));
+  sendSockAddr.sin_port = htons(port);
+
+  int clientSd = socket(AF_INET, SOCK_STREAM, 0);
+
+  int status = connect(clientSd, (sockaddr*)&sendSockAddr, sizeof(sendSockAddr));
+  if (status < 0) return NULL;
+
+  testing_msg[0] = 0x00;
+
+  send(clientSd, (char*)&testing_msg, 129, 0);
+
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+  close(clientSd);
+
+  pthread_exit(NULL);
+  return NULL;
+}
+
+static void* test_client_thread2(void* param) {
+  std::this_thread::sleep_for(std::chrono::milliseconds((long)param));
+
+  const int port = 25000;
+  struct hostent* host = gethostbyname("0.0.0.0");
+
+  sockaddr_in sendSockAddr;
+  bzero((char*)&sendSockAddr, sizeof(sendSockAddr));
+  sendSockAddr.sin_family = AF_INET;
+  sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)*host->h_addr_list));
+  sendSockAddr.sin_port = htons(port);
+
+  int clientSd = socket(AF_INET, SOCK_STREAM, 0);
+
+  int status = connect(clientSd, (sockaddr*)&sendSockAddr, sizeof(sendSockAddr));
+  if (status < 0) return NULL;
+
+  testing_msg[0] = 0x01;
+
+  send(clientSd, (char*)&testing_msg, 33, 0);
+
+  uint8_t testing_msg2[128];
+  int read_size = recv(clientSd, (char*)&testing_msg2, 128, 0);
+
+  if (read_size == 128 && memcmp(testing_msg2, testing_msg + 1, 128) == 0) {
+    std::cout << "Match!" << std::endl;
+  }
+
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+  close(clientSd);
+
+  pthread_exit(NULL);
+  return NULL;
+}
+
+static void test_client(long delay, void* (*runner)(void* param)) {
+  pthread_t t;
+  pthread_create(&t, NULL, runner, (void*)delay);
+}
+
 // TEST_CASE("T1") {
 //     table t = table();
 //     int i = 0;

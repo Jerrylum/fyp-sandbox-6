@@ -3,4 +3,4 @@ _msvc_build/
 .idea/
 cmake-build-debug/
 build/
-.vscode/
+# .vscode/

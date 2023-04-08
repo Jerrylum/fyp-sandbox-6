@@ -8,6 +8,13 @@
 ListenerTable::ListenerTable() {
   by_requests = (ListenRequest **)malloc(sizeof(ListenRequest *) * INDEX_COUNT);
   by_listeners = (ListenRequest **)malloc(sizeof(ListenRequest *) * 65536 * MAXIMUM_REQUEST);
+
+  for (int i = 0; i < INDEX_COUNT; i++) {
+    by_requests[i] = NULL;
+  }
+  for (int i = 0; i < 65536 * MAXIMUM_REQUEST; i++) {
+    by_listeners[i] = NULL;
+  }
 }
 
 ListenerTable::~ListenerTable() {
@@ -82,6 +89,7 @@ void ListenerTable::listen(uint16_t fd, uint8_t *headers, uint8_t count) {
 void ListenerTable::remove(uint16_t fd) {
   for (uint8_t i = 0; i < MAXIMUM_REQUEST; i++) {
     remove_from_bucket(by_listeners[fd * MAXIMUM_REQUEST + i]);
+    by_listeners[fd * MAXIMUM_REQUEST + i] = NULL;
   }
 }
 
@@ -105,8 +113,11 @@ void ListenerTable::insert_to_bucket(ListenRequest *request) {
 
   struct ListenRequest *head = by_requests[index];
   if (head == NULL) {
+    request->previous = NULL;
+    request->next = NULL;
     by_requests[index] = request;
   } else {
+    request->previous = NULL;
     request->next = head;
     head->previous = request;
     by_requests[index] = request;
